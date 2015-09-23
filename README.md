@@ -16,7 +16,9 @@ var opts =
 	method: 'cor', // Can be either COR or MR (see ATTED-II API)
 	cutoff: 0.7, // The default cutoff / threshold
 	guarantee: 10, // COR cutoffs are widened until at least this many results are returned.
-	service: "http://sample.com/mymine/service" // The InterMine web service to resolve IDs
+	service: "http://sample.com/mymine/service", // The InterMine web service to resolve IDs
+    atted: "https://api.araport.org/community/v0.3/atted/atted_coex_v1.0/access", // The ATTED API URL
+    accessToken: "xxxxx" // OAuth2 Bearer token to access the API through api.araport.org
 }
 
 // Callback function to be run after a query has completed.
