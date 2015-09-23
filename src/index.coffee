@@ -1,4 +1,5 @@
 request = require 'superagent'
+require('superagent-auth-bearer')(request);
 Utils = require './utils/Utils'
 _ = require 'underscore'
 Q = require 'q'
@@ -87,7 +88,7 @@ class App
 		@wrapper = $("#{@opts.target.selector} > div.atted-table-wrapper")
 
 		@loadingmessage = $("#{@opts.target.selector} > div.atted-table-wrapper > div.atted-loading-message")
-		
+
 
 		@spinel = @wrapper.find(".searching_spinner_center")
 
@@ -101,7 +102,7 @@ class App
 		# Execute our pre-query hook, if it exists.
 		if @queryhook? then do @queryhook
 
-		
+
 		Q.when(@call(@opts, null, true))
 			.then @getResolutionJob
 			.then @waitForResolutionJob
@@ -117,7 +118,7 @@ class App
 
 	getResolutionJob: (genes) =>
 
-		
+
 		deferred = Q.defer()
 
 		# Pluck the gene names from our ATTED results
@@ -223,10 +224,11 @@ class App
 		deferred ?= Q.defer()
 
 		# The URL of our web service
-		url = "http://atted.jp/cgi-bin/API_coex.cgi?#{@opts.AGIcode}/#{options.method}/#{options.cutoff}"
+		titleAGICode = @opts.AGIcode[0].toUpperCase() + @opts.AGIcode.substr(1).toLowerCase()
+		url = @opts.atted + "/#{titleAGICode}/#{options.method}/#{options.cutoff}"
 
 		# Make a request to the web service
-		request.get url, (response) =>
+		request.get(url).authBearer("#{@opts.accessToken}").end (response) =>
 
 
 			@allgenes = Utils.responseToJSON response.text
@@ -241,7 +243,7 @@ class App
 
 						@scoredict[geneObj.name] = geneObj.score
 
-					
+
 					deferred.resolve true
 
 				else if options.guarantee > 0 and options.cutoff > 0
@@ -286,7 +288,7 @@ class App
 
 		cutoff = _.filter @allgenes, (gene) ->
 
-			gene.score <= score 
+			gene.score <= score
 
 		@rendertable cutoff
 		@graph.update score
@@ -345,7 +347,7 @@ class App
 					item.score
 
 			$("#{@opts.target.selector} > div.atted-table-wrapper > table.atted-table").html template {genes: genes}
-		 	
+
 		if @opts.cutoff isnt @opts.origcutoff
 			@opts.target.find(".statsmessage").html("<strong>#{genes.length}</strong> genes found with a score <strong>>= #{@currentcutoff} (Cutoff has been automatically reduced to guarantee results.)</strong>")
 		else

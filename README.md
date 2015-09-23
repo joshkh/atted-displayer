@@ -9,7 +9,7 @@ Include "atted-displayer.js" in the head of your HTML document and create a cont
 ```javascript
 
 // Options for the displayer
-var opts = 
+var opts =
 {                
 	target: '#displayercontainer', // The target HTML element to render the table.
 	AGIcode: 'At5g54270', // The search gene
@@ -33,7 +33,7 @@ var queryhook = function() {
 // Build and execute the displayer.
 var displayer = new AttedDisplayer(opts, callback, queryhook);
 ```
-    
+
 ##Development##
 
 The displayer uses a grunt based build process to browserify the code.
@@ -53,7 +53,9 @@ The build process runs automatically when files in the /src folder are modified:
 To view the tool, serve the home directory (in a separate terminal window):
 
 <code>serve -p 9001</code>
-<code>python SimpleHTTPServer 9001</code>
+
+or
+
+<code>python -m SimpleHTTPServer 9001</code>
 
 ##Useage##
-
