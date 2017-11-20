@@ -1,42 +1,48 @@
-.atted-table{
-	font-family: sans-serif;
-	-webkit-font-smoothing: antialiased;
-	font-size: 12px;
-	width: 100%;
-	overflow: y;
+.atted-table {
+    font-family: sans-serif;
+    -webkit-font-smoothing: antialiased;
+    font-size: 12px;
+    width: 100%;
+    overflow: y;
 }
 
 .toolcontrols {
-	padding: 5px 0 5px 0;
+    padding: 5px 0 5px 0;
 }
 
+.toolcontrols input[type="radio"] {
+    display: none;
+}
 
+.toolcontrols label {
+    display: none;
+}
 
 .toolbar {
-	/*margin: 0 35px 0 35px;*/
-	clear:  both;
+    /*margin: 0 35px 0 35px;*/
+    clear: both;
 }
 
 .atted-table-wrapper {
-	max-height: 150px;
-	height: 150px;
-	overflow-y: scroll;
-	background: #EBEBEB;
-	clear: both;
+    max-height: 150px;
+    height: 150px;
+    overflow-y: scroll;
+    background: #EBEBEB;
+    clear: both;
 }
 
-
 .atted-loading-message {
-	height: 150px;
-	max-height: 150px;
-	text-align: center;
-	position: relative;
+    height: 150px;
+    max-height: 150px;
+    text-align: center;
+    position: relative;
 }
 
 .atted-controls {
-	margin-left: 35px;
-	margin-right: 35px;
+    margin-left: 35px;
+    margin-right: 35px;
 }
+
 
 /*.axis {
 	font-family: sans-serif;
@@ -51,44 +57,40 @@
 
 .x.axis path {
   /*display: none;*/
-}
 
+
+}
 .x.axis.label {
-	fill: white;
-	font-size: 10px;
+    fill: white;
+    font-size: 10px;
 }
 .y.axis.label {
-	fill: white;
-	font-size: 10px;
+    fill: white;
+    font-size: 10px;
 }
-
 .line {
-  fill: none;
-  stroke: white;
-  stroke-width: 1px;
+    fill: none;
+    stroke: white;
+    stroke-width: 1px;
 }
-
 .line.unselected {
-	fill: none;
-	stroke: black;
-	stroke-width: 1px;
+    fill: none;
+    stroke: black;
+    stroke-width: 1px;
 }
-
-
 .line.selected {
-	fill: none;
-	stroke: white;
-	stroke-width: 1px;
+    fill: none;
+    stroke: white;
+    stroke-width: 1px;
 }
-
 .viz {
-	width: 100%;
-	height: 150px;
+    width: 100%;
+    height: 150px;
 }
-
 .brush .extent {
-  stroke: #fff;
-  fill: white;
-  fill-opacity: .5;
-  shape-rendering: crispEdges;
-}*/
+    stroke: #fff;
+    fill: white;
+    fill-opacity: .5;
+    shape-rendering: crispEdges;
+}
+*/
