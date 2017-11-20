@@ -22,8 +22,8 @@ class App
 		@opts.target = $ @opts.target
 		@currentcutoff = 0
 
-		if !@opts.cutoff then @opts.cutoff = 0.6
-		if !@opts.method then @opts.method = 'cor'
+		if !@opts.cutoff then @opts.cutoff = 20
+		if !@opts.method then @opts.method = 'mr'
 
 		# Listener: Switching score types:
 		mediator.subscribe "switch-score", =>
