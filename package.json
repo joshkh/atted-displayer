@@ -2,15 +2,15 @@
     "name": "atted-displayer",
     "version": "1.2.0",
     "devDependencies": {
-        "grunt": "0.4.x",
+        "grunt": "^1.0.4",
+        "grunt-browserify": "*",
         "grunt-cli": ">=0.1.6",
         "grunt-contrib-clean": "*",
-        "grunt-contrib-coffee": "^1.0.0",
+        "grunt-contrib-coffee": "^2.1.0",
+        "grunt-contrib-copy": "*",
         "grunt-contrib-jshint": "*",
         "grunt-contrib-uglify": "*",
-        "grunt-contrib-copy": "*",
         "grunt-contrib-watch": "*",
-        "grunt-browserify": "*",
         "imjs": "~3.6.1"
     },
     "repository": {
@@ -27,13 +27,13 @@
     },
     "dependencies": {
         "cssify": "~0.6.0",
-        "handlebars": "~2.0.0-beta.1",
+        "handlebars": "^4.4.5",
         "hbsfy": "~2.1.0",
-        "jquery": "~2.1.1",
+        "jquery": "^3.4.1",
         "mediator-js": "~0.9.8",
         "q": "~1.0.1",
         "spin": "0.0.1",
-        "superagent": "~0.18.2",
+        "superagent": "^5.1.0",
         "superagent-auth-bearer": "0.0.1",
         "underscore": "~1.6.0"
     }
