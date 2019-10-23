@@ -225,7 +225,7 @@ class App
 
 		# The URL of our web service
 		titleAGICode = @opts.AGIcode[0].toUpperCase() + @opts.AGIcode.substr(1).toLowerCase()
-		url = @opts.atted + "/#{titleAGICode}/#{options.method}/#{options.cutoff}"
+		url = @opts.atted + "#{titleAGICode}/#{options.method}/#{options.cutoff}"
 
 		# Make a request to the web service
 		request.get(url).authBearer("#{@opts.accessToken}").end (response) =>
