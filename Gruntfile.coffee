@@ -111,7 +111,7 @@ module.exports = taskManager = (grunt) ->
   # Register custom tasks.
   grunt.registerTask 'setup',   ['clean', 'do']
   grunt.registerTask 'compile', ['coffee']
-  grunt.registerTask 'build',   ['copy:templates', 'copy:styles', 'browserify', 'uglify', 'copy:builds']
+  grunt.registerTask 'build',   ['copy:templates', 'copy:styles', 'browserify', 'copy:builds']
 
   grunt.registerTask 'all',     ['setup', 'compile', 'build']
 
