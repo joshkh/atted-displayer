@@ -3,8 +3,8 @@
 
 <head>
     <script charset="utf-8" type="text/javascript" src="build/atted-displayer-1.2.0.js"></script>
-    <link rel="stylesheet" type="text/css" href="https://cdn.araport.org/js/intermine/im-tables/latest/main.css">
-    <script charset="UTF-8" type="text/javascript" src="https://cdn.araport.org/js/intermine/im-tables/latest/imtables.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://bar.utoronto.ca/araport/CDN/js/intermine/im-tables/latest/main.css">
+    <script charset="UTF-8" type="text/javascript" src="https://bar.utoronto.ca/araport/CDN/js/intermine/im-tables/latest/imtables.min.js"></script>
 </head>
 
 <body>
@@ -20,7 +20,7 @@
 
             var options = {
                 type: 'table',
-                url: 'https://apps.araport.org/thalemine',
+                url: 'https://bar.utoronto.ca/thalemine',
                 query: {
                     "model": {
                         "name": "genomic"
@@ -53,12 +53,10 @@
         var opts = {
             target: '#displayercontainer',
             AGIcode: 'at3g24650',
-            method: 'mr',
-            cutoff: 15,
-            guarantee: 5,
-            service: "https://apps.araport.org/thalemine/service",
-            atted: "https://apps.araport.org/proxy/atted/API/coex",
-            accessToken: "9eec20cc702cffc9d0d26dc2ec0af1"
+            cutoff: 20,
+            guarantee: 10,
+            service: "https://bar.utoronto.ca/thalemine/service",
+            atted: "http://127.0.0.1:5000/proxy/atted_api4/"
         }
 
         var displayer = new AttedDisplayer(opts, callback, queryhook);

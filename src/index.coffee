@@ -1,17 +1,14 @@
 request = require 'superagent'
-require('superagent-auth-bearer')(request);
 Utils = require './utils/Utils'
 _ = require 'underscore'
 Q = require 'q'
 style = require('./styles/app.css');
 Spinner = require 'spin'
 $ = require 'jquery'
-# Graph = require './utils/Graph'
 mediator = require './utils/Events'
 Handlebars = require 'hbsfy/runtime'
 
 class App
-
   constructor: (@opts, @callback, @queryhook) ->
 
     # Execute our prehook, if it exists.
@@ -101,18 +98,21 @@ class App
       .then @waitForResolutionJob
       .then @fetchResolutionJob
       .then (results) =>
-      @resolvedgenes = results.body.results.matches.MATCH
-      @resolvedgenes = _.map @resolvedgenes, (gene) =>
-        gene.score = @scoredict[gene.summary.primaryIdentifier]
-        return gene
+        @resolvedgenes = results.body.results.matches.MATCH
 
-      do @renderapp
+        @resolvedgenes = _.map @resolvedgenes, (gene) =>
+          gene.score = @scoredict[gene.summary.primaryIdentifier]
+          return gene
+
+        do @renderapp
 
   getResolutionJob: (genes) =>
     deferred = Q.defer()
 
     # Pluck the gene names from our ATTED results
-    ids = _.pluck @allgenes, "name"
+    ids = _.pluck @allgenes, "other_id"
+
+    console.log ids
 
     # Build our POST data
     payload =
@@ -127,8 +127,8 @@ class App
     request
       .post(url)
       .send(payload)
-      .end (response) =>
-      deferred.resolve response.body
+      .then (response) =>
+        deferred.resolve response.body
 
     deferred.promise
 
@@ -139,14 +139,14 @@ class App
 
     request
       .get(url)
-      .end (response) =>
-      if response.body.status is "RUNNING"
-        setTimeout (=>
-          @waitForResolutionJob(resolutionJob, deferred)
-          return
-        ), 1000
-      else if response.body.status is "SUCCESS"
-        deferred.resolve resolutionJob
+      .then (response) =>
+        if response.body.status is "RUNNING"
+          setTimeout (=>
+            @waitForResolutionJob(resolutionJob, deferred)
+            return
+          ), 1000
+        else if response.body.status is "SUCCESS"
+          deferred.resolve resolutionJob
 
     deferred.promise
 
@@ -159,9 +159,9 @@ class App
     url = @opts.service + "/ids/#{resolutionJob.uid}/results"
     request
       .get(url)
-      .end (response) =>
-      deferred.resolve response
-      @deleteResolutionJob resolutionJob
+      .then (response) =>
+        deferred.resolve response
+        @deleteResolutionJob resolutionJob
 
     deferred.promise
 
@@ -170,7 +170,7 @@ class App
     url = @opts.service + "/ids/#{resolutionJob.uid}"
     request
       .del(url)
-# .end (response) =>
+# .then (response) =>
 # 	# console.log "Delete ID resolution response:", response
 
   requery: (options, autocutoff) ->
@@ -191,14 +191,13 @@ class App
       .then @waitForResolutionJob
       .then @fetchResolutionJob
       .then (results) =>
-
-      # console.log "final results", results
-      @resolvedgenes = results.body.results.matches.MATCH
-      @resolvedgenes = _.map @resolvedgenes, (gene) =>
-        gene.score = @scoredict[gene.summary.primaryIdentifier]
-        return gene
-      # console.log "after mapping...", @resolvedgenes
-      do @renderapp
+        # console.log "final results", results
+        @resolvedgenes = results.body.results.matches.MATCH
+        @resolvedgenes = _.map @resolvedgenes, (gene) =>
+          gene.score = @scoredict[gene.summary.primaryIdentifier]
+          return gene
+        # console.log "after mapping...", @resolvedgenes
+        do @renderapp
 
   call: (options, deferred, autocutoff) =>
 
@@ -213,11 +212,12 @@ class App
 
     # The URL of our web service
     titleAGICode = @opts.AGIcode[0].toUpperCase() + @opts.AGIcode.substr(1).toLowerCase()
-    url = @opts.atted + "#{titleAGICode}/#{options.method}/#{options.cutoff}"
+    url = @opts.atted + "#{titleAGICode}/#{options.cutoff}"
 
     # Make a request to the web service
-    request.get(url).authBearer("#{@opts.accessToken}").end (response) =>
-      @allgenes = Utils.responseToJSON response.text
+    request.get(url).then (response) =>
+      #@allgenes = Utils.responseToJSON response.text
+      @allgenes = response.body.result_set[0].results
 
       if autocutoff and options.method.toUpperCase() is "COR"
 
@@ -226,8 +226,7 @@ class App
           @scoredict = {}
 
           _.each @allgenes, (geneObj) =>
-            @scoredict[geneObj.name] = geneObj.score
-
+            @scoredict[geneObj.gene] = geneObj.logit_score
 
           deferred.resolve true
 
@@ -244,10 +243,10 @@ class App
         @scoredict = {}
 
         _.each @allgenes, (geneObj) =>
-          @scoredict[geneObj.name] = geneObj.score
+          @scoredict[geneObj.other_id] = geneObj.logit_score
 
         deferred.resolve true
-
+        console.log @scoredict
 
     # Return our promise
     deferred.promise
@@ -272,9 +271,11 @@ class App
     @graph.update score
 
   renderapp: =>
+
     @wrapper.find(".atted-table").show()
     @loadingmessage.hide()
 
+    console.log @resolvedgenes
     @rendertable @resolvedgenes
 
     # that = @
@@ -315,6 +316,7 @@ class App
         else
           item.score
 
+      console.log "About to add table"
       $("#{@opts.target.selector} > div.atted-table-wrapper > table.atted-table").html template {genes: genes}
 
     if @opts.cutoff isnt @opts.origcutoff
