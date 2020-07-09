@@ -1,60 +1,44 @@
 request = require 'superagent'
-require('superagent-auth-bearer')(request);
-Utils = require './utils/Utils'
 _ = require 'underscore'
 Q = require 'q'
 style = require('./styles/app.css');
 Spinner = require 'spin'
 $ = require 'jquery'
-# Graph = require './utils/Graph'
 mediator = require './utils/Events'
 Handlebars = require 'hbsfy/runtime'
 
 class App
-
   constructor: (@opts, @callback, @queryhook) ->
 
     # Execute our prehook, if it exists.
     @opts.origcutoff = @opts.cutoff
     @defaultopts = _.clone @opts
-
-    # Turn our target string into a jquery object
-    @opts.target = $ @opts.target
     @currentcutoff = 0
 
     if !@opts.cutoff then @opts.cutoff = 20
-    if !@opts.method then @opts.method = 'mr'
 
     # Listener: Switching score types:
     mediator.subscribe "switch-score", =>
-      method = $("#{@opts.target.selector} > div.toolbar > div.toolcontrols input[type='radio']:checked");
-      cutoff = $("#{@opts.target.selector} > div.toolbar > div.toolcontrols > input.cutoff");
-      @opts.method = method.val()
+      cutoff = $("#{@opts.target} > div.toolbar > div.toolcontrols > input.cutoff");
       if cutoff.val()? and cutoff.val() != "" then @opts.origcutoff = cutoff.val() else @opts.origcutoff = @defaultopts.origcutoff
       if cutoff.val()? and cutoff.val() != "" then @opts.cutoff = cutoff.val() else @opts.cutoff = @defaultopts.cutoff
-      if method.length > 0 and cutoff.length > 0 then @requery @opts, false
+      if cutoff.length > 0 then @requery @opts, false
 
     mediator.subscribe "load-defaults", =>
-      radioMethod = $("#{@opts.target.selector} > div.toolbar > div.toolcontrols input[class='" + @opts.method + "']");
-      textCutoff = $("#{@opts.target.selector} > div.toolbar > div.toolcontrols input.cutoff");
-      radioMethod.prop("checked", true)
+      textCutoff = $("#{@opts.target} > div.toolbar > div.toolcontrols input.cutoff");
       textCutoff.val(@defaultopts.origcutoff)
-
-      # @requery {method: @opts.method, cutoff: @opts.cutoff}
       @requery @defaultopts, true
 
     # Fetch our loading template
     template = require("./templates/shell.hbs");
 
     # Render the shell of the application
-    @opts.target.html template {}
+    $(@opts.target).html template {}
 
     toolbartemplate = require './templates/tools.hbs'
 
-    $("#{@opts.target.selector} > div.toolbar").html toolbartemplate {opts: @opts, mediator: mediator}
-    radioMethod = $("#{@opts.target.selector} > div.toolbar > div.toolcontrols input[class='" + @opts.method + "']");
-    textCutoff = $("#{@opts.target.selector} > div.toolbar > div.toolcontrols input.cutoff");
-    radioMethod.prop("checked", true)
+    $("#{@opts.target} > div.toolbar").html toolbartemplate {opts: @opts, mediator: mediator}
+    textCutoff = $("#{@opts.target} > div.toolbar > div.toolcontrols input.cutoff");
     textCutoff.val(@opts.cutoff)
 
     $('.reload').on "click", ()->
@@ -84,8 +68,8 @@ class App
 
     # Get the spinner container from the loading template
     @loadingtarget = $ '#searching_spinner_center'
-    @wrapper = $("#{@opts.target.selector} > div.atted-table-wrapper")
-    @loadingmessage = $("#{@opts.target.selector} > div.atted-table-wrapper > div.atted-loading-message")
+    @wrapper = $("#{@opts.target} > div.atted-table-wrapper")
+    @loadingmessage = $("#{@opts.target} > div.atted-table-wrapper > div.atted-loading-message")
     @spinel = @wrapper.find(".searching_spinner_center")
 
     # target = document.getElementById "searching_spinner_center"
@@ -101,18 +85,17 @@ class App
       .then @waitForResolutionJob
       .then @fetchResolutionJob
       .then (results) =>
-      @resolvedgenes = results.body.results.matches.MATCH
-      @resolvedgenes = _.map @resolvedgenes, (gene) =>
-        gene.score = @scoredict[gene.summary.primaryIdentifier]
-        return gene
-
-      do @renderapp
+        @resolvedgenes = results.body.results.matches.MATCH
+        @resolvedgenes = _.map @resolvedgenes, (gene) =>
+          gene.score = @scoredict[gene.summary.primaryIdentifier]
+          return gene
+        do @renderapp
 
   getResolutionJob: (genes) =>
     deferred = Q.defer()
 
     # Pluck the gene names from our ATTED results
-    ids = _.pluck @allgenes, "name"
+    ids = _.pluck @allgenes, "other_id"
 
     # Build our POST data
     payload =
@@ -127,8 +110,8 @@ class App
     request
       .post(url)
       .send(payload)
-      .end (response) =>
-      deferred.resolve response.body
+      .then (response) =>
+        deferred.resolve response.body
 
     deferred.promise
 
@@ -139,51 +122,42 @@ class App
 
     request
       .get(url)
-      .end (response) =>
-      if response.body.status is "RUNNING"
-        setTimeout (=>
-          @waitForResolutionJob(resolutionJob, deferred)
-          return
-        ), 1000
-      else if response.body.status is "SUCCESS"
-        deferred.resolve resolutionJob
+      .then (response) =>
+        if response.body.status is "RUNNING"
+          setTimeout (=>
+            @waitForResolutionJob(resolutionJob, deferred)
+            return
+          ), 1000
+        else if response.body.status is "SUCCESS"
+          deferred.resolve resolutionJob
 
     deferred.promise
-
 
   fetchResolutionJob: (resolutionJob) =>
-
-# Get our resolution results
+    # Get our resolution results
     deferred = Q.defer()
-
     url = @opts.service + "/ids/#{resolutionJob.uid}/results"
+
     request
       .get(url)
-      .end (response) =>
-      deferred.resolve response
-      @deleteResolutionJob resolutionJob
+      .then (response) =>
+        deferred.resolve response
+        @deleteResolutionJob resolutionJob
 
     deferred.promise
-
 
   deleteResolutionJob: (resolutionJob) =>
     url = @opts.service + "/ids/#{resolutionJob.uid}"
     request
       .del(url)
-# .end (response) =>
-# 	# console.log "Delete ID resolution response:", response
 
   requery: (options, autocutoff) ->
-
-# Execute our pre-query hook, if it exists.
+    # Execute our pre-query hook, if it exists.
     if @queryhook? then do @queryhook
-
     @loadingmessage.show()
-
     @table = @wrapper.find(".atted-table")
     @table.hide()
-    @opts.target.find(".statsmessage").html("Querying ATTED service...")
-
+    $(@opts.target).find(".statsmessage").html("Querying ATTED service...")
     @lastoptions = options
 
     Q.when(@call(options, null, autocutoff))
@@ -191,21 +165,14 @@ class App
       .then @waitForResolutionJob
       .then @fetchResolutionJob
       .then (results) =>
-
-      # console.log "final results", results
-      @resolvedgenes = results.body.results.matches.MATCH
-      @resolvedgenes = _.map @resolvedgenes, (gene) =>
-        gene.score = @scoredict[gene.summary.primaryIdentifier]
-        return gene
-      # console.log "after mapping...", @resolvedgenes
-      do @renderapp
+        @resolvedgenes = results.body.results.matches.MATCH
+        @resolvedgenes = _.map @resolvedgenes, (gene) =>
+          gene.score = @scoredict[gene.summary.primaryIdentifier]
+          return gene
+        do @renderapp
 
   call: (options, deferred, autocutoff) =>
-
-    # @lastoptions = options
     @calculatedoptions = options
-
-    options.guarantee ?= 1
     @currentcutoff = options.cutoff
 
     # Create our deferred object, later to be resolved
@@ -213,41 +180,17 @@ class App
 
     # The URL of our web service
     titleAGICode = @opts.AGIcode[0].toUpperCase() + @opts.AGIcode.substr(1).toLowerCase()
-    url = @opts.atted + "#{titleAGICode}/#{options.method}/#{options.cutoff}"
+    url = @opts.atted + "/#{titleAGICode}/#{options.cutoff}"
 
     # Make a request to the web service
-    request.get(url).authBearer("#{@opts.accessToken}").end (response) =>
-      @allgenes = Utils.responseToJSON response.text
+    request.get(url).then (response) =>
+      @allgenes = response.body.result_set[0].results
+      @scoredict = {}
 
-      if autocutoff and options.method.toUpperCase() is "COR"
+      _.each @allgenes, (geneObj) =>
+        @scoredict[geneObj.other_id] = geneObj.logit_score
 
-        if @allgenes.length >= options.guarantee
-
-          @scoredict = {}
-
-          _.each @allgenes, (geneObj) =>
-            @scoredict[geneObj.name] = geneObj.score
-
-
-          deferred.resolve true
-
-        else if options.guarantee > 0 and options.cutoff > 0
-
-          options.cutoff -= 0.1
-          options.cutoff = options.cutoff.toFixed(3)
-          @call(options, deferred, true)
-
-        else
-          deferred.resolve @allgenes
-
-      else
-        @scoredict = {}
-
-        _.each @allgenes, (geneObj) =>
-          @scoredict[geneObj.name] = geneObj.score
-
-        deferred.resolve true
-
+      deferred.resolve true
 
     # Return our promise
     deferred.promise
@@ -259,30 +202,15 @@ class App
 
     template = require("./templates/selected.hbs")
 
-    $("#{@opts.target.selector} > div.stats").html template {values: values, opts: opts, total: total}
+    $("#{@opts.target} > div.stats").html template {values: values, opts: opts, total: total}
 
     # $('#stats').html template {values: values, opts: opts}
     @rendertable(values)
 
-  filter: (score) ->
-    cutoff = _.filter @allgenes, (gene) ->
-      gene.score <= score
-
-    @rendertable cutoff
-    @graph.update score
-
   renderapp: =>
     @wrapper.find(".atted-table").show()
     @loadingmessage.hide()
-
     @rendertable @resolvedgenes
-
-    # that = @
-    # $("#fader").on("input", () -> that.filter this.value);
-
-    # if @graph? then @graph.newdata(@allgenes, @) else @graph = new Graph @allgenes, @
-    # if @graph? then @graph.newdata(@allgenes, @) else @graph = new Graph @allgenes, @
-    # @graph = new Graph @allgenes, @
 
     newarr = []
 
@@ -295,35 +223,31 @@ class App
     if genes.length < 1
 
       template = require './templates/noresults.hbs'
-      $("#{@opts.target.selector} > div.atted-table-wrapper").html template {}
+      $("#{@opts.target} > div.atted-table-wrapper").html template {}
 
 
     else
       # Check to see if the table needs to be added
-      table = $("#{@opts.target.selector} > div.atted-table-wrapper > table.atted-table")
+      table = $("#{@opts.target} > div.atted-table-wrapper > table.atted-table")
 
-      if !table.length then $("#{@opts.target.selector} > div.atted-table-wrapper").html("<table class='atted-table collection-table'></table>")
+      if !table.length then $("#{@opts.target} > div.atted-table-wrapper").html("<table class='atted-table collection-table'></table>")
 
       template = require './templates/table.hbs'
 
-      min = _.min genes, (gene) ->
+      max = _.max genes, (gene) ->
         gene.score
 
       genes = _.sortBy genes, (item) ->
-        if min.score < 1
-          -item.score
-        else
+        if max.score < 1
           item.score
+        else
+          -item.score
 
-      $("#{@opts.target.selector} > div.atted-table-wrapper > table.atted-table").html template {genes: genes}
+      $("#{@opts.target} > div.atted-table-wrapper > table.atted-table").html template {genes: genes}
 
     if @opts.cutoff isnt @opts.origcutoff
-      @opts.target.find(".statsmessage").html("<strong>#{genes.length}</strong> genes found with a score <strong>>= #{@currentcutoff} (Cutoff has been automatically reduced to guarantee results.)</strong>")
+      $(@opts.target).find(".statsmessage").html("<strong>#{genes.length}</strong> genes found (Cutoff has been automatically reduced to guarantee results.)")
     else
-      if @opts.method.toUpperCase() is "COR"
-        @opts.target.find(".statsmessage").html("<strong>#{genes.length}</strong> genes found with a score <strong>>= #{@currentcutoff}</strong>")
-      else
-        @opts.target.find(".statsmessage").html("<strong>#{genes.length}</strong> genes found with a score <strong><= #{@currentcutoff}</strong>")
-
+      $(@opts.target).find(".statsmessage").html("<strong>#{genes.length}</strong> genes found")
 
 module.exports = App

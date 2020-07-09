@@ -1,13 +1,8 @@
 <div class="toolcontrols">
-
-		<input type="radio" class="mr" name="inlineRadioOptions" id="inlineRadio1" value="mr"><label for="inlineRadio1">MR</label>
-		<input type="radio" class="cor" name="inlineRadioOptions" id="inlineRadio1" value="cor" disabled><label for="inlineRadio1">COR</label>
-	    <strong>MR </strong><input type="text" class="cutoff" placeholder="10">
-	  	<button class="reload">Query</button>
-	  	<button class="defaults">Reset</button>
-		<div style="font-size: 10px"><strong>MR</strong>: Mutual rank is calculated as the average of the correlation rank of gene B to gene A and correlation rank of gene A to gene B</div>
-	  	<!-- <div style="padding-top: 5px; font-size: 10px"><strong>COR</strong>: Pearson’s correlation coefficient between gene A and gene B</div> -->
-
+    <strong>Top N </strong><input type="text" class="cutoff" placeholder="10">
+  	<button class="reload">Query</button>
+  	<button class="defaults">Reset</button>
+	<div style="font-size: 10px"><strong>LS</strong>: LS is a monotonic transformation (negative logit) of MR index. Larger LS indicates stronger co-expression.</div>
  </div>
 
 
