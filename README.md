@@ -8,29 +8,29 @@ Include "atted-displayer.js" in the head of your HTML document and create a cont
 
 ```javascript
 // Options for the displayer
-var opts =
+let opts =
 {                
     target: '#displayercontainer', // The target HTML element to render the table.
     AGIcode: 'At5g54270', // The search gene
     cutoff: 20, // The default cutoff / threshold
     guarantee: 10, // COR cutoffs are widened until at least this many results are returned.
     service: "https://bar.utoronto.ca/thalemine/service", // The InterMine web service to resolve IDs
-    atted: "https://bar.utoronto.ca/api/proxy/atted_api4/", // The ATTED API URL
+    atted: "https://bar.utoronto.ca/api/proxy/atted_api4", // The ATTED API URL
 }
 
 // Callback function to be run after a query has completed.
-var callback = function(values) {
+let callback = function(values) {
 	console.log("Resolved genes from InterMine", values);
 }
 
 // A hook function to be called before a query starts.
 // (Useful for clearing or resetting tools outside the scope of this displayer)
-var queryhook = function() {
+let queryhook = function() {
 	$('#status').html("Querying service...");
 }
 
 // Build and execute the displayer.
-var displayer = new AttedDisplayer(opts, callback, queryhook);
+let displayer = new AttedDisplayer(opts, callback, queryhook);
 ```
 
 ## Development
