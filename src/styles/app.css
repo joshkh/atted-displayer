@@ -24,8 +24,8 @@
 }
 
 .atted-table-wrapper {
-    max-height: 150px;
-    height: 150px;
+    max-height: 300px;
+    height: fit-content;
     overflow-y: scroll;
     background: #EBEBEB;
     clear: both;

@@ -13,11 +13,9 @@ class App
     # Execute our prehook, if it exists.
     @opts.origcutoff = @opts.cutoff
     @defaultopts = _.clone @opts
-
     @currentcutoff = 0
 
     if !@opts.cutoff then @opts.cutoff = 20
-    if !@opts.method then @opts.method = 'mr'
 
     # Listener: Switching score types:
     mediator.subscribe "switch-score", =>
@@ -29,8 +27,6 @@ class App
     mediator.subscribe "load-defaults", =>
       textCutoff = $("#{@opts.target} > div.toolbar > div.toolcontrols input.cutoff");
       textCutoff.val(@defaultopts.origcutoff)
-
-      # @requery {method: @opts.method, cutoff: @opts.cutoff}
       @requery @defaultopts, true
 
     # Fetch our loading template
@@ -90,11 +86,9 @@ class App
       .then @fetchResolutionJob
       .then (results) =>
         @resolvedgenes = results.body.results.matches.MATCH
-
         @resolvedgenes = _.map @resolvedgenes, (gene) =>
           gene.score = @scoredict[gene.summary.primaryIdentifier]
           return gene
-
         do @renderapp
 
   getResolutionJob: (genes) =>
@@ -140,11 +134,10 @@ class App
     deferred.promise
 
   fetchResolutionJob: (resolutionJob) =>
-
-# Get our resolution results
+    # Get our resolution results
     deferred = Q.defer()
-
     url = @opts.service + "/ids/#{resolutionJob.uid}/results"
+
     request
       .get(url)
       .then (response) =>
@@ -161,13 +154,10 @@ class App
   requery: (options, autocutoff) ->
     # Execute our pre-query hook, if it exists.
     if @queryhook? then do @queryhook
-
     @loadingmessage.show()
-
     @table = @wrapper.find(".atted-table")
     @table.hide()
     $(@opts.target).find(".statsmessage").html("Querying ATTED service...")
-
     @lastoptions = options
 
     Q.when(@call(options, null, autocutoff))
@@ -182,10 +172,7 @@ class App
         do @renderapp
 
   call: (options, deferred, autocutoff) =>
-    # @lastoptions = options
     @calculatedoptions = options
-
-    options.guarantee ?= 1
     @currentcutoff = options.cutoff
 
     # Create our deferred object, later to be resolved
@@ -219,12 +206,6 @@ class App
 
     # $('#stats').html template {values: values, opts: opts}
     @rendertable(values)
-
-  filter: (score) ->
-    cutoff = _.filter @allgenes, (gene) ->
-      gene.score <= score
-
-    @rendertable cutoff
 
   renderapp: =>
     @wrapper.find(".atted-table").show()
@@ -265,11 +246,8 @@ class App
       $("#{@opts.target} > div.atted-table-wrapper > table.atted-table").html template {genes: genes}
 
     if @opts.cutoff isnt @opts.origcutoff
-      $(@opts.target).find(".statsmessage").html("<strong>#{genes.length}</strong> genes found with a score <strong>>= #{@currentcutoff} (Cutoff has been automatically reduced to guarantee results.)</strong>")
+      $(@opts.target).find(".statsmessage").html("<strong>#{genes.length}</strong> genes found (Cutoff has been automatically reduced to guarantee results.)")
     else
-      if @opts.method.toUpperCase() is "COR"
-        $(@opts.target).find(".statsmessage").html("<strong>#{genes.length}</strong> genes found with a score <strong>>= #{@currentcutoff}</strong>")
-      else
-        $(@opts.target).find(".statsmessage").html("<strong>#{genes.length}</strong> genes found with a score <strong><= #{@currentcutoff}</strong>")
+      $(@opts.target).find(".statsmessage").html("<strong>#{genes.length}</strong> genes found")
 
 module.exports = App
