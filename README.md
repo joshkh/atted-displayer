@@ -10,11 +10,11 @@ Include "atted-displayer.js" in the head of your HTML document and create a cont
 // Options for the displayer
 var opts =
 {                
-	target: '#displayercontainer', // The target HTML element to render the table.
-	AGIcode: 'At5g54270', // The search gene
-	cutoff: 20, // The default cutoff / threshold
-	guarantee: 10, // COR cutoffs are widened until at least this many results are returned.
-	service: "https://bar.utoronto.ca/thalemine/service", // The InterMine web service to resolve IDs
+    target: '#displayercontainer', // The target HTML element to render the table.
+    AGIcode: 'At5g54270', // The search gene
+    cutoff: 20, // The default cutoff / threshold
+    guarantee: 10, // COR cutoffs are widened until at least this many results are returned.
+    service: "https://bar.utoronto.ca/thalemine/service", // The InterMine web service to resolve IDs
     atted: "https://bar.utoronto.ca/api/proxy/atted_api4/", // The ATTED API URL
 }
 
